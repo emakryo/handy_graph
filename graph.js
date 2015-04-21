@@ -2,13 +2,16 @@
 
 var ctx;
 var directed;
+var nodeNum;
 var radius = 15;
+var selectedNode = null;
 
 onload = function(){
     var canvas = document.getElementById("canvas");
-    canvas.width = 1000;
-    canvas.height = 700;
+    canvas.width = 700;
+    canvas.height = 400;
     ctx = canvas.getContext("2d");
+    ctx.font = "15px sans-serif";
 
     var directed_checkbox = document.getElementById("directed");
     directed_checkbox.onchange = function(){
@@ -16,24 +19,41 @@ onload = function(){
         draw();
     }
 
-    var nodeArray = [new Node([200,150]), new Node([300,150])];
-    var edgeArray = [new Edge(nodeArray[0].pos, nodeArray[1].pos)];
-    var selected = null;
+    var nodenum_checkbox = document.getElementById("node_num");
+    nodenum_checkbox.onchange = function(){
+        nodeNum = nodenum_checkbox.checked;
+        draw();
+    }
+
+    var width_input = document.getElementById("width");
+    width_input.onchange = function(){
+        canvas.width = width_input.valueAsNumber;
+    }
+
+    var height_input = document.getElementById("height");
+    height_input.onchange = function(){
+        canvas.height = height_input.valueAsNumber;
+    }
+
+    var nodeArray = []
+    var edgeArray = []
+    var dragging = null;
 
     function draw(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        for(var i=0; i<nodeArray.length; ++i){
+        for(var i=0; i<nodeArray.length; i++){
             nodeArray[i].draw();
         }
-        for(var i=0; i<edgeArray.length; ++i){
+        for(var i=0; i<edgeArray.length; i++){
             edgeArray[i].draw();
         }
     }
 
     function findNearestNode(pos){
         var nearestNode = nodeArray[0];
+        if(nearestNode == undefined) return undefined;
         var nearestDist = dist(pos, nearestNode.pos);
-        for(var i=0; i<nodeArray.length; ++i){
+        for(var i=0; i<nodeArray.length; i++){
             var d = dist(pos, nodeArray[i].pos);
             if(d < nearestDist){
                 nearestDist = d;
@@ -46,45 +66,47 @@ onload = function(){
     canvas.onmousedown = function(e){
         var mousePos = this.getMousePos(e);
         var nearestNode = findNearestNode(mousePos);
+        if(nearestNode == undefined) return;
         if(e.altKey){
-            selected = new Edge(nearestNode.pos, mousePos);
-            edgeArray.push(selected);
+            dragging = new Edge(nearestNode.pos, mousePos);
+            edgeArray.push(dragging);
         }
         else{
-            selected = nearestNode;
+            dragging = nearestNode;
+            if(dist(nearestNode.pos, mousePos) < radius)
+                selectedNode = nearestNode;
+            else
+                selectedNode = null;
         }
-        return;
     }
 
     canvas.onmousemove = function(e){
         var mousePos = this.getMousePos(e);
-        if(selected instanceof Node){
-            selected.pos[0] = mousePos[0];
-            selected.pos[1] = mousePos[1];
+        if(dragging instanceof Node){
+            dragging.pos[0] = mousePos[0];
+            dragging.pos[1] = mousePos[1];
             draw();
-            return;
         }
-        else if(selected instanceof Edge){
-            selected.to = mousePos;
+        else if(dragging instanceof Edge){
+            dragging.to = mousePos;
             draw();
-            return;
         }
-        return;
     }
 
     canvas.onmouseup = function(e){
-        if(selected instanceof Edge){
+        if(dragging instanceof Edge){
             var nearestNode = findNearestNode(this.getMousePos(e));
-            selected.to = nearestNode.pos;
-            draw();
+            dragging.to = nearestNode.pos;
         }
-        selected = null;
+        dragging = null;
+        draw();
     }
 
     canvas.ondblclick = function(e){
         var mousePos = this.getMousePos(e);
-        var newNode = new Node(mousePos);
+        var newNode = new Node(mousePos, nodeArray.length);
         nodeArray.push(newNode);
+        selectedNode = newNode;
         draw();
     }
 
@@ -92,14 +114,34 @@ onload = function(){
 
 }
 
-function Node(pos){
+function Node(pos, label){
     this.pos = pos;
+    this.label = label;
+    this.fillcolor = null;
+    this.framecolor = "#000000";
     this.draw = function(){
         ctx.beginPath();
         ctx.arc(this.pos[0],this.pos[1],
                 radius,0,2*Math.PI,false);
         ctx.closePath();
-        ctx.stroke();
+        if(this.fillcolor != null){
+            ctx.fillStyle = this.fillcolor;
+            ctx.fill();
+        }
+        if(this.framecolor != null){
+            ctx.strokeStyle = this.framecolor;
+            ctx.stroke();
+        }
+        if(selectedNode === this){
+            ctx.beginPath();
+            ctx.arc(this.pos[0],this.pos[1],radius+1,2*Math.PI,false);
+            ctx.closePath();
+            ctx.strokeStyle = "red";
+            ctx.stroke();
+        }
+        if(nodeNum == false) return;
+        ctx.fillStyle = "#000000";
+        ctx.fillText(this.label,pos[0]-5,pos[1]+5);
     }
 }
 
@@ -112,6 +154,8 @@ function Edge(from, to){
         var radius_v = unit.map(function(a){ return radius*a });
         var start = numeric.add(this.from, radius_v);
         var end = numeric.sub(this.to, radius_v);
+        ctx.fillStyle = "#000000";
+        ctx.strokeStyle = "#000000";
         ctx.beginPath();
         ctx.moveTo(start[0],start[1]);
         ctx.lineTo(end[0], end[1]);

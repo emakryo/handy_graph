@@ -1,10 +1,9 @@
 # Handy Graph Drawer
 
-This is simplest Graph Drawer.
+This is simplest graph drawer.
 This works on Web browsers(Google Chrome 41.0)
 
 #### TODO
 
-* save as image
-* add properties with node
+* add properties with node(color, tag, etc...)
 * node and edge removal
