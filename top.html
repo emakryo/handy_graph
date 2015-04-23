@@ -1,8 +1,9 @@
 <html>
-  <title>handy graph</title>
-  <script src="graph.js" type="text/javascript"></script>
-  <script src="numeric-1.2.6.js" type="text/javascript"></script>
   <head>
+    <title>handy graph</title>
+    <script src="graph.js" type="text/javascript"></script>
+    <script src="numeric-1.2.6.js" type="text/javascript"></script>
+    <script src="jscolor/jscolor.js" type="text/javascript"></script>
   </head>
   <body>
     <h1>Handy Graph Drawer</h1>
@@ -18,19 +19,19 @@
       </tr>
       <tr>
         <td> width </td>
-        <td>
-          <input type="number" id="width">
-        </td>
+        <td> <input type="number" id="width"> </td>
       </tr>
       <tr>
         <td> height </td>
-        <td>
-          <input type="number" id="height">
-        </td>
+        <td> <input type="number" id="height"> </td>
+      </tr>
+      <tr>
+        <td> Node color </td>
+        <td> <input class="color" id="nodeColor"> </td>
       </tr>
     </table>
     <table>
-      <tr> <td>Double Click: </td><td>add a node</td> </tr>
+      <tr> <td>Double Click: </td><td>add/remove a node</td> </tr>
       <tr> <td>Drag: </td><td>move a node</td> </tr>
       <tr> <td>Alt + Drag: </td><td>create an edge</td> </tr>
     </table>

@@ -13,34 +13,53 @@ onload = function(){
     ctx = canvas.getContext("2d");
     ctx.font = "15px sans-serif";
 
-    var directed_checkbox = document.getElementById("directed");
-    directed_checkbox.onchange = function(){
-        directed = directed_checkbox.checked;
+    var directedCheckbox = document.getElementById("directed");
+    directedCheckbox.onchange = function(){
+        directed = directedCheckbox.checked;
         draw();
     }
 
-    var nodenum_checkbox = document.getElementById("node_num");
-    nodenum_checkbox.onchange = function(){
-        nodeNum = nodenum_checkbox.checked;
+    var nodenumCheckbox = document.getElementById("node_num");
+    nodenumCheckbox.onchange = function(){
+        nodeNum = nodenumCheckbox.checked;
         draw();
     }
 
-    var width_input = document.getElementById("width");
-    width_input.onchange = function(){
-        canvas.width = width_input.valueAsNumber;
+    var widthInput = document.getElementById("width");
+    widthInput.onchange = function(){
+        canvas.width = widthInput.valueAsNumber;
     }
 
-    var height_input = document.getElementById("height");
-    height_input.onchange = function(){
-        canvas.height = height_input.valueAsNumber;
+    var heightInput = document.getElementById("height");
+    heightInput.onchange = function(){
+        canvas.height = heightInput.valueAsNumber;
+    }
+
+    var nodeColorInput = document.getElementById("nodeColor");
+    nodeColorInput.onchange = function(){
+        if(selectedNode instanceof Node){
+            selectedNode.fillcolor = "#"+nodeColorInput.value;
+        }
+        draw();
     }
 
     var nodeArray = []
     var edgeArray = []
+    var nodeNum = 0;
     var dragging = null;
 
     function draw(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
+
+        /*
+        ctx.beginPath();
+        ctx.moveTo(canvas.width, canvas.height);
+        ctx.lineTo(canvas.width-15, canvas.height);
+        ctx.lineTo(canvas.width, canvas.height-15);
+        ctx.closePath();
+        ctx.fillStyle = "#808080";
+        ctx.fill();
+        */
         for(var i=0; i<nodeArray.length; i++){
             nodeArray[i].draw();
         }
@@ -63,6 +82,18 @@ onload = function(){
         return nearestNode;
     }
 
+    function selectNode(node){
+        if(node instanceof Node){
+            selectedNode = node;
+            nodeColorInput.value = node.fillcolor.substr(1,6);
+            var event = new KeyboardEvent("keyup");
+            nodeColorInput.dispatchEvent(event);
+        }
+        else{
+            selectedNode = null;
+        }
+    }
+
     canvas.onmousedown = function(e){
         var mousePos = this.getMousePos(e);
         var nearestNode = findNearestNode(mousePos);
@@ -74,9 +105,9 @@ onload = function(){
         else{
             dragging = nearestNode;
             if(dist(nearestNode.pos, mousePos) < radius)
-                selectedNode = nearestNode;
+                selectNode(nearestNode);
             else
-                selectedNode = null;
+                selectNode(null);
         }
     }
 
@@ -104,9 +135,17 @@ onload = function(){
 
     canvas.ondblclick = function(e){
         var mousePos = this.getMousePos(e);
-        var newNode = new Node(mousePos, nodeArray.length);
-        nodeArray.push(newNode);
-        selectedNode = newNode;
+        var nearestNode = findNearestNode(this.getMousePos(e));
+
+        if(nodeArray.length == 0 || dist(nearestNode.pos, mousePos) > radius){
+            var newNode = new Node(mousePos, nodeNum++);
+            nodeArray.push(newNode);
+            selectNode(newNode);
+        }
+        else{
+            nodeArray.splice(nodeArray.indexOf(nearestNode),1);
+        }
+
         draw();
     }
 
@@ -117,7 +156,7 @@ onload = function(){
 function Node(pos, label){
     this.pos = pos;
     this.label = label;
-    this.fillcolor = null;
+    this.fillcolor = "#FFFFFF";
     this.framecolor = "#000000";
     this.draw = function(){
         ctx.beginPath();
@@ -186,16 +225,13 @@ function rotate_mat(angle){
 }
 
 HTMLCanvasElement.prototype.getMousePos = function(event) {
-    // http://stackoverflow.com/questions/55677/how-do-i-get-the-coordinates-of-a-mouse-click-on-a-canvas-element
-    var totalOffsetX = 0;
-    var totalOffsetY = 0;
-    var currentElement = this;
-    do{
-        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
-        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
-    }
-    while(currentElement = currentElement.offsetParent)
-    var x = event.pageX - totalOffsetX;
-    var y = event.pageY - totalOffsetY;
-    return [x, y];
+    //http://stackoverflow.com/questions/12772943/getting-cursor-position-in-a-canvas-without-jquery
+    var rect = this.getBoundingClientRect();
+    var root = document.documentElement;
+
+    // return relative mouse position
+    var mouseX = event.clientX - rect.left - root.scrollLeft;
+    var mouseY = event.clientY - rect.top - root.scrollTop;
+    return [mouseX, mouseY];
+
 };
