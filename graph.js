@@ -140,14 +140,25 @@ onload = function(){
         var nearestNode = findNearestNode(this.getMousePos(e));
 
         if(nodeArray.length == 0 || dist(nearestNode.pos, mousePos) > radius){
+            // add node
             var newNode = new Node(mousePos, nodeCounter++);
             nodeArray.push(newNode);
             selectNode(newNode);
         }
         else{
+            // remove node
             nodeArray.splice(nodeArray.indexOf(nearestNode),1);
+            for(var i=0; i<edgeArray.length;){
+                if(edgeArray[i].from === nearestNode.pos ||
+                   edgeArray[i].to === nearestNode.pos ||
+                   edgeArray[i].from === edgeArray[i].to){
+                    edgeArray.splice(i,1);
+                }
+                else{
+                    i++;
+                }
+            }
         }
-
         draw();
     }
 
