@@ -47,7 +47,7 @@ onload = function(){
 
     var nodeArray = []
     var edgeArray = []
-    var nodeNum = 0;
+    var nodeCounter = 0;
     var dragging = null;
 
     function draw(){
@@ -140,7 +140,7 @@ onload = function(){
         var nearestNode = findNearestNode(this.getMousePos(e));
 
         if(nodeArray.length == 0 || dist(nearestNode.pos, mousePos) > radius){
-            var newNode = new Node(mousePos, nodeNum++);
+            var newNode = new Node(mousePos, nodeCounter++);
             nodeArray.push(newNode);
             selectNode(newNode);
         }
