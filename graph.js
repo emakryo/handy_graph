@@ -26,11 +26,13 @@ onload = function(){
     }
 
     var widthInput = document.getElementById("width");
+    widthInput.value = canvas.width;
     widthInput.onchange = function(){
         canvas.width = widthInput.valueAsNumber;
     }
 
     var heightInput = document.getElementById("height");
+    heightInput.value =  canvas.height;
     heightInput.onchange = function(){
         canvas.height = heightInput.valueAsNumber;
     }
